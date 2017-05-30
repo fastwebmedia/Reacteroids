@@ -6,7 +6,7 @@ https://github.com/gaearon/react-transform-boilerplate
 
 ## Demo
 
-http://fastwebmedia.github.io/Reacteroids/
+http://fastwebmedia.github.io/asteroids/
 
 ## Install
 
