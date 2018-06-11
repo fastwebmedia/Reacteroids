@@ -324,7 +324,7 @@ export class Reacteroids extends Component {
         {isMobile ? (
           <div className="device-overlay">
             <img src="https://cdn.fastweb.media/app/uploads/2018/06/11145651/rotate.gif" alt="Rotate" />
-            <h2>Please rotate your device to play Asteriods</h2>
+            <h2>Please rotate your device to play.</h2>
           </div>
         ) : null}
         {endgame}
