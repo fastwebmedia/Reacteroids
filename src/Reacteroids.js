@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import Ship from './Ship'
 import Asteroid from './Asteroid'
 import { randomNumBetweenExcluding } from './helpers'
+import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect'
 
 const KEY = {
   LEFT: 37,
@@ -35,10 +36,33 @@ export class Reacteroids extends Component {
       topScore: localStorage['topscore'] || 0,
       inGame: false
     }
+
     this.ship = []
     this.asteroids = []
     this.bullets = []
     this.particles = []
+
+    this.handleTouch = this.handleTouch.bind(this)
+  }
+
+  componentDidMount() {
+    window.addEventListener('keyup', this.handleKeys.bind(this, false))
+    window.addEventListener('keydown', this.handleKeys.bind(this, true))
+    window.addEventListener('resize', this.handleResize.bind(this, false))
+
+    const context = this.refs.canvas.getContext('2d')
+    this.setState({ context: context })
+    this.startGame()
+
+    requestAnimationFrame(() => {
+      this.update()
+    })
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleKeys)
+    window.removeEventListener('resize', this.handleKeys)
+    window.removeEventListener('resize', this.handleResize)
   }
 
   handleResize(value, e) {
@@ -57,28 +81,23 @@ export class Reacteroids extends Component {
     if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D) keys.right = value
     if (e.keyCode === KEY.UP || e.keyCode === KEY.W) keys.up = value
     if (e.keyCode === KEY.SPACE) keys.space = value
+
     this.setState({
       keys: keys
     })
   }
 
-  componentDidMount() {
-    window.addEventListener('keyup', this.handleKeys.bind(this, false))
-    window.addEventListener('keydown', this.handleKeys.bind(this, true))
-    window.addEventListener('resize', this.handleResize.bind(this, false))
+  handleTouch(direction, isOn) {
+    let keys = this.state.keys
 
-    const context = this.refs.canvas.getContext('2d')
-    this.setState({ context: context })
-    this.startGame()
-    requestAnimationFrame(() => {
-      this.update()
+    if (direction === 'up') keys.up = isOn
+    if (direction === 'right') keys.right = isOn
+    if (direction === 'left') keys.left = isOn
+    if (direction === 'space') keys.space = isOn
+
+    this.setState({
+      keys: keys
     })
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.handleKeys)
-    window.removeEventListener('resize', this.handleKeys)
-    window.removeEventListener('resize', this.handleResize)
   }
 
   update() {
@@ -164,29 +183,31 @@ export class Reacteroids extends Component {
     }
   }
 
+  randomRange(min, max, inc) {
+    min = min || 0
+    inc = inc || 1
+    if (!max) {
+      return new Error('need to define a max')
+    }
+
+    return Math.floor(Math.random() * (max - min) / inc) * inc + min
+  }
+
   generateAsteroids(howMany) {
     let asteroids = []
     let ship = this.ship[0]
+
     for (let i = 0; i < howMany; i++) {
       let asteroid = new Asteroid({
-        size: 80,
+        size: isMobile ? this.randomRange(20, 40, 5) : this.randomRange(60, 80, 5),
         position: {
-          x: randomNumBetweenExcluding(
-            0,
-            this.state.screen.width,
-            ship.position.x - 60,
-            ship.position.x + 60
-          ),
-          y: randomNumBetweenExcluding(
-            0,
-            this.state.screen.height,
-            ship.position.y - 60,
-            ship.position.y + 60
-          )
+          x: randomNumBetweenExcluding(0, this.state.screen.width, ship.position.x - 60, ship.position.x + 60),
+          y: randomNumBetweenExcluding(0, this.state.screen.height, ship.position.y - 60, ship.position.y + 60)
         },
         create: this.createObject.bind(this),
         addScore: this.addScore.bind(this)
       })
+
       this.createObject(asteroid, 'asteroids')
     }
   }
@@ -236,6 +257,7 @@ export class Reacteroids extends Component {
   render() {
     let endgame
     let message
+    let controls
 
     if (this.state.currentScore <= 0) {
       message = '0 points... So sad.'
@@ -250,15 +272,61 @@ export class Reacteroids extends Component {
         <div className="endgame">
           <p>Game over!</p>
           <p>{message}</p>
-          <button onClick={this.startGame.bind(this)}>
-            try again?
-          </button>
+          <button onClick={this.startGame.bind(this)}>try again?</button>
         </div>
+      )
+    }
+
+    if (isMobile) {
+      controls = (
+        <div className="mobile-controls">
+          <div className="dpad">
+            <div className="flex-row">
+              <div
+                className="icon up"
+                onTouchStart={() => this.handleTouch('up', true)}
+                onTouchEnd={() => this.handleTouch('up', false)}
+              />
+            </div>
+            <div className="flex-row">
+              <div
+                className="icon left"
+                onTouchStart={() => this.handleTouch('left', true)}
+                onTouchEnd={() => this.handleTouch('left', false)}
+              />
+              <div
+                className="icon right"
+                onTouchStart={() => this.handleTouch('right', true)}
+                onTouchEnd={() => this.handleTouch('right', false)}
+              />
+            </div>
+          </div>
+          <div className="action">
+            <div
+              className="icon shoot"
+              onTouchStart={() => this.handleTouch('space', true)}
+              onTouchEnd={() => this.handleTouch('space', false)}
+            />
+          </div>
+        </div>
+      )
+    } else {
+      controls = (
+        <span className="controls">
+          Use [A][S][W][D] or [←][↑][↓][→] to MOVE<br />
+          Use [SPACE] to SHOOT
+        </span>
       )
     }
 
     return (
       <div>
+        {isMobile ? (
+          <div className="device-overlay">
+            <img src="https://cdn.fastweb.media/app/uploads/2018/06/11145651/rotate.gif" alt="Rotate" />
+            <h2>Please rotate your device to play Asteriods</h2>
+          </div>
+        ) : null}
         {endgame}
         <span className="score current-score">
           Score: <span>{this.state.currentScore}</span>
@@ -266,10 +334,7 @@ export class Reacteroids extends Component {
         <span className="score top-score">
           Top Score: <span>{this.state.topScore}</span>
         </span>
-        <span className="controls">
-          Use [A][S][W][D] or [←][↑][↓][→] to MOVE<br />
-          Use [SPACE] to SHOOT
-        </span>
+        {controls}
         <canvas
           ref="canvas"
           width={this.state.screen.width * this.state.screen.ratio}
