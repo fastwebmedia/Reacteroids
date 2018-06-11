@@ -142,7 +142,7 @@ export class Reacteroids extends Component {
   addScore(points) {
     if (this.state.inGame) {
       this.setState({
-        currentScore: this.state.currentScore + points
+        currentScore: Math.round(this.state.currentScore + points)
       })
     }
   }
