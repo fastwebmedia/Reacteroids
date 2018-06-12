@@ -50,6 +50,14 @@ export class Reacteroids extends Component {
     window.addEventListener('keydown', this.handleKeys.bind(this, true))
     window.addEventListener('resize', this.handleResize.bind(this, false))
 
+		window.addEventListener("load", () => {
+			// Set a timeout...
+			setTimeout(() => {
+				// Hide the address bar!
+				window.scrollTo(0, 1);
+			}, 0);
+		});
+
     const context = this.refs.canvas.getContext('2d')
     this.setState({ context: context })
     this.startGame()

@@ -3,6 +3,7 @@ body {
   margin: 0;
   font-family: 'PT Mono', serif;
   color: #ffffff;
+  height: 100%.1%;
 }
 
 canvas {
@@ -56,7 +57,7 @@ canvas {
   right: 0;
   height: 300px;
   width: 100%;
-  z-index: 99;
+  z-index: 40;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -120,7 +121,7 @@ canvas {
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 16px;
-  z-index: 4;
+  z-index: 50;
   text-align: center;
 }
 
